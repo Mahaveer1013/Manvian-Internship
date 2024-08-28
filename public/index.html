@@ -159,6 +159,12 @@
             const room = document.getElementById('roomname').value;
             document.getElementById('active-room').innerText = `Active Room: ${room}`;
             socket.emit('joinRoom', { room, username });
+            const chat = document.getElementById('chat');
+            chat.innerHTML = `
+            <p>Welcome to Chat App!</p>
+            <p>You have joined the Manvian chat room</p>
+            <p>Hi User</p>
+            `
         });
 
         socket.on('message', ({ message, user, time }) => {
