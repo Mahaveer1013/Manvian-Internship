@@ -139,8 +139,6 @@
     </div>
     <main id="chat">
         <p>Welcome to Chat App!</p>
-        <p>You have joined the Manvian chat room</p>
-        <p>Hi User</p>
     </main>
     <footer>
         <p id="user-list"> </p>
@@ -162,8 +160,8 @@
             const chat = document.getElementById('chat');
             chat.innerHTML = `
             <p>Welcome to Chat App!</p>
-            <p>You have joined the Manvian chat room</p>
-            <p>Hi User</p>
+            <p>You have joined the ${room} chat room</p>
+            <p>Hi ${username}</p>
             `
         });
 
@@ -188,6 +186,12 @@
         socket.on('userJoined', ({ user, room }) => {
             const chat = document.getElementById('chat');
             chat.innerHTML += `<p>${user} has joined the ${room} chat room</p>`;
+            chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
+        });
+
+        socket.on('userLeft', ({ user, room }) => {
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<p>${user} has left the ${room} chat room</p>`;
             chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
         });
 
