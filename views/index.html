@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: black;
+            color: white;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .input-group {
+            display: flex;
+            width: 80%;
+            margin-bottom: 10px;
+        }
+
+        .input-group input,
+        .input-group button {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            box-sizing: border-box;
+            flex-grow: 1;
+            margin: 0 2px;
+            border-radius: 5px;
+        }
+
+        .input-group button {
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+        main {
+            background-color: rgb(62, 60, 60);
+            width: 80%;
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 10px;
+            overflow-y: auto;
+        }
+
+        main p {
+            background-color: #d3d3d3;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
+        footer {
+            width: 80%;
+            color: white;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        footer .message-box {
+            display: flex;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        footer .message-box input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px 0 0 5px;
+            border: none;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        footer .message-box button {
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border-radius: 0 5px 5px 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .part {
+            width: 30%;
+        }
+
+        .left {
+            align-self: self-start;
+        }
+
+        .up {
+            border-radius: 7px 7px 0 0;
+            padding: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left .up {
+            background-color: blue;
+        }
+
+        .right {
+            align-self: self-end;
+        }
+
+        .right .up {
+            background-color: rgb(142, 48, 142);
+        }
+
+        .down {
+            background-color: aliceblue;
+            border-radius: 0 0 7px 7px;
+            color: black;
+            padding: 8px 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-group">
+        <input type="text" placeholder="User" id="username">
+        <input type="text" placeholder="Room" id="roomname">
+        <button id="joinRoom">Join</button>
+    </div>
+    <main id="chat">
+        <p>Welcome to Chat App!</p>
+        <p>You have joined the Manvian chat room</p>
+        <p>Hi User</p>
+    </main>
+    <footer>
+        <p id="user-list"> </p>
+        <p id="active-room">Active Rooms: </p>
+        <div class="message-box">
+            <input type="text" placeholder="Your Message" id="message">
+            <button id="sendMessage">Send</button>
+        </div>
+    </footer>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('joinRoom').addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const room = document.getElementById('roomname').value;
+            document.getElementById('active-room').innerText = `Active Room: ${room}`;
+            socket.emit('joinRoom', { room, username });
+        });
+
+        socket.on('message', ({ message, user, time }) => {
+            const chat = document.getElementById('chat');
+            const username = document.getElementById('username').value;
+            const messageHTML = `
+                <div class="${username === user ? 'right' : 'left'} part">
+                    <div class="up">
+                        <span>${user}</span>
+                        <span>${time}</span>
+                    </div>
+                    <div class="down">
+                        ${message}
+                    </div>
+                </div>
+            `;
+            chat.innerHTML += messageHTML;
+            chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
+        });
+
+        socket.on('userJoined', ({ user, room }) => {
+            const chat = document.getElementById('chat');
+            chat.innerHTML += `<p>${user} has joined the ${room} chat room</p>`;
+            chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
+        });
+
+        socket.on('roomUsers', ({ users, room }) => {
+            const userList = document.getElementById('user-list');
+            userList.innerText = `Users in ${room}: ${users.join(', ')}`;
+        });
+
+        document.getElementById('sendMessage').addEventListener('click', () => {
+            const room = document.getElementById('roomname').value;
+            const username = document.getElementById('username').value;
+            const message = document.getElementById('message').value;
+            socket.emit('chatMessage', { room, message, user: username });
+            document.getElementById('message').value = '';
+        });
+    </script>
+</body>
+</html>
